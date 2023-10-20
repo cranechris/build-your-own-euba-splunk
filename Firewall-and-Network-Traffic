@@ -12,3 +12,21 @@ Pipe the summary data from every firewall and traffic event from your security l
 | eval savedsearch_description="network traffic behavior"
 | table src,dest,app,action,dvc,sourcetype,index,risk_*,savedsearch_description
 | collect index=risk
+
+## Schedule
+Scheduled(never real time)
+
+cron
+*/2,*,*,*,*
+
+duration
+earliest: -4m@m, latest: -2m@m
+
+### Schedule reasoning
+this puts the schedule on a regular but limited window to help with performance while capturing every event.
+
+## Throttling
+src,dest,app,action,dvc,sourcetype,index for 5 minutes
+
+### Throttling reasoining
+remove the duplicates completely
