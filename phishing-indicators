@@ -11,7 +11,8 @@ index=mail_security sourcetype="proofpoint_tap_siem" NOT category=malware NOT ac
 | eval risk_object='dest'
 | eval risk_object_type="user"
 | eval savedsearch_description="email risk behavior"
-| table dest,src_user,category,eventType,signature,url,src,action,index,sourcetype,risk_*,savedsearch_description
+| rename index as orig_index sourcetype as orig_sourcetype
+| table dest,src_user,category,eventType,signature,url,src,action,orig_index,orig_sourcetype,risk_*,savedsearch_description
 | collect index=risk
 
 ## Schedule
