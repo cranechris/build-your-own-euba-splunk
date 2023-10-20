@@ -9,7 +9,8 @@ Pipe the summary data from every IDS and IPS event from your security logs into 
 | eval risk_object='src'
 | eval risk_object_type="system"
 | eval savedsearch_description="intrusion sensor behavior"
-| table src,dest,app,action,severity,dvc,sourcetype,index,risk_*,savedsearch_description
+| rename index as orig_index sourcetype as orig_sourcetype
+| table src,dest,app,action,severity,dvc,orig_sourcetype,orig_index,risk_*,savedsearch_description
 | collect index=risk
 
 ### Case statement reasoning
