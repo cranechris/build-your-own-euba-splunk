@@ -12,7 +12,8 @@ You will need to identify the user proxy sourcetypes in your env for the first l
 | eval risk_object='user'
 | eval risk_object_type="user"
 | eval savedsearch_description="user web behavior"
-| table user,src,dest,category,action,status,http_method,http_user_agent,sourcetype,index,risk_*,savedsearch_description
+| rename index as orig_index sourcetype as orig_sourcetype
+| table user,src,dest,category,action,status,http_method,http_user_agent,orig_sourcetype,orig_index,risk_*,savedsearch_description
 | collect index=risk
 
 ## Schedule
