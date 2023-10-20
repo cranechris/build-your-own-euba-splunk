@@ -1,0 +1,14 @@
+# Network DataModel Search
+
+Pipe the summary data from every firewall and traffic event from your security logs into a risk index with an equal score of "1". You can always adjust the score dynamically using eval statements like:
+| eval risk_score=case(rule=="cleanup rule", "1", rule=="prod web", "75", rule=="stealth rule", "80")
+
+## Search String
+
+| tstats `summariesonly` count from datamodel=Network_Traffic.All_Traffic where NOT All_Traffic.src=unknown NOT All_Traffic.src=0.0.0.0 by All_Traffic.src,All_Traffic.dest,All_Traffic.app,All_Traffic.action,All_Traffic.dvc,sourcetype,index | `drop_dm_object_name("All_Traffic")`
+| eval risk_score=1
+| eval risk_object='src'
+| eval risk_object_type="system"
+| eval savedsearch_description="network traffic behavior"
+| table src,dest,app,action,dvc,sourcetype,index,risk_*,savedsearch_description
+| collect index=risk
