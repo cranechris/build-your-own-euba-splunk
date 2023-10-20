@@ -10,7 +10,8 @@ Pipe the summary data from every firewall and traffic event from your security l
 | eval risk_object='src'
 | eval risk_object_type="system"
 | eval savedsearch_description="network traffic behavior"
-| table src,dest,app,action,dvc,sourcetype,index,risk_*,savedsearch_description
+| rename index as orig_index sourcetype as orig_sourcetype
+| table src,dest,app,action,dvc,orig_sourcetype,orig_index,risk_*,savedsearch_description
 | collect index=risk
 
 ## Schedule
