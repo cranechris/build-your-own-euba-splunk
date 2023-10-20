@@ -1,6 +1,6 @@
 # Intrusion DataModel Search
 
-Pipe the summary data from every IDS and IPS event from your security logs into a risk index with an equal score of "1". You can always adjust the score dynamically using eval statements like:
+Pipe the summary data from every IDS and IPS event from your security logs into a risk index with an equal score of "1". You can always adjust the score dynamically using eval statements like deomnstrated in the search as a starting suggestion.
 
 ## Search String
 
