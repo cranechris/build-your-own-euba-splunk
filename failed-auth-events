@@ -1,0 +1,34 @@
+# Authentication DataModel Search
+
+This is as straight forward as it gets. All failed auth events by src and user. I exclude system accounts, unknown users, and - by default. Pre-Auth failure is not present in brute force attacks on Windows DCs.
+This datamodel should include all of your auth sources, not just your windows domain.
+
+## Search String
+
+| tstats summariesonly=1 allow_old_summaries=1 count from datamodel=Authentication.Authentication where Authentication.action="failure" Authentication.user!="*$" Authentication.user!="unknown" Authentication.user!="-" NOT Authentication.signature="Kerberos pre-authentication failed" by Authentication.src Authentication.dest Authentication.signature Authentication.action Authentication.user Authentication.src_user Authentication.app index sourcetype
+| `drop_dm_object_name("Authentication")` 
+| eval risk_score=1
+| eval risk_object='src'
+| eval risk_object_type="system"
+| eval savedsearch_description="suspicious authentication behavior"
+| rename index as orig_index sourcetype as orig_sourcetype
+| table src,dest,app,action,orig_sourcetype,orig_index,risk_*,savedsearch_description
+| collect index=risk
+
+## Schedule
+Scheduled(never real time)
+
+cron
+*/2,*,*,*,*
+
+duration
+earliest: -8m@m, latest: -6m@m
+
+### Schedule reasoning
+this puts the schedule on a regular but limited window to help with performance while capturing every event.
+
+## Throttling
+src,dest,app,action,orig_sourcetype,orig_index for 5 minutes
+
+### Throttling reasoining
+remove the duplicates completely
