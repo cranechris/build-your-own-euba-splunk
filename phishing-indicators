@@ -1,0 +1,33 @@
+# Phishing Search
+
+Pipe the summary data from every email security event from your security logs into a risk index with an equal score of "1". You can always adjust the score dynamically using eval statements like I did as a suggestion below. 
+NOTE: I am exclude email malware because I have included it into the malware datamodel in my environment. You will need to consider your configuration. This search is focused around the logs available with proofpoint as it identifies when a user has clicked a link for increased risk and impact.
+
+## Search String
+
+index=mail_security sourcetype="proofpoint_tap_siem" NOT category=malware NOT action=blocked
+| stats count by dest,src_user,category,eventType,signature,url,src,action,index,sourcetype
+| eval risk_score=case(match(eventType,"permit"), "100", 1==1, "75")
+| eval risk_object='dest'
+| eval risk_object_type="user"
+| eval savedsearch_description="email risk behavior"
+| table dest,src_user,category,eventType,signature,url,src,action,index,sourcetype,risk_*,savedsearch_description
+| collect index=risk
+
+## Schedule
+Scheduled(never real time)
+
+cron
+*/5,*,*,*,*
+
+duration
+earliest: -6m@m, latest: -1m@m
+
+### Schedule reasoning
+this puts the schedule on a regular but limited window to help with performance while capturing every event.
+
+## Throttling
+dest,src_user,category,eventType,signature,url,src,action,index,sourcetype for 7 minutes
+
+### Throttling reasoining
+remove the duplicates completely
