@@ -1,0 +1,58 @@
+# make use of the data here, start by searching the same data.
+## import the statistics from the daily saved search generating 30 days worth of behavior baselining.
+## aggregate all the data across all datasets into useable information for the analyst along with creating a table for future alerting decisions. I leave risk_object_type as values to alert you to potential issues in data classification.
+## where the relative now risk score is greater than the risk average plus 2.5 times the risk standard deviation. this is the high level variable for tuning massive floods of alerts.
+
+
+index=risk risk_object_type IN ("system","user") AND savedsearch_description IN ("network traffic behavior","suspicious authentication behavior","intrusion sensor behavior","malware behavior","email risk behavior","user web behavior")
+| lookup ueba-risk-stats.csv risk_object OUTPUT risk_avg,risk_std,risk_object_type,overall_threshold, overall_std
+| stats 
+sum(risk_score) as risk_score
+values(orig_sourcetype) as orig_sourcetype
+values(orig_index) as orig_index
+values(savedsearch_description) as savedsearch_descriptions
+values(risk_object_type) as risk_object_type
+dc(src) as src_count
+dc(dest) as dest_count
+dc(category) as category_count
+dc(action) as action_count
+dc(status) as status_count
+dc(http_method) as http_method_count
+dc(http_user_agent) as http_user_agent_count
+dc(severity) as severity_count
+dc(file_hash) as file_hash_count
+dc(file_name) as file_name_count
+dc(app) as app_count
+dc(dvc) as dvc_count
+by risk_object, risk_avg, risk_std, overall_threshold, overall_std
+| where risk_score>(risk_avg+(risk_std\*2.5)
+| mvjoin orig_index=(orig_index," OR index=")
+| mvjoin orig_sourcetype=(orig_sourcetype," OR sourcetype=")
+
+## mvjoin commands here allow for faster data drilldowns. use the below as a drilldown search to bring back all data on the event in question with an expanded time window to see the increase in activity:
+### (index=$orig_index$) AND (sourcetype=$orig_sourcetype$) AND "$risk_object$" earliest=-24h@h latest=-5m@m
+
+
+
+# Alert
+you can leverage Splunk's notable events if you subscribe to their Enterprise Security. Otherwise, you'll want to alert on each event in the saved search configuration. 
+
+# Dashboard
+you can create a dashboard to look at this data with a drilldown link on the risk object usikng the search provided. the main downfall here is the refresh timing. I recommend using this search against the last relative 60 minutes for risk_score calculations.
+dashboard auto-refresh is an option
+
+## Schedule
+Scheduled(never real time). Run it every hour. I chose 7 minutes past the hour for this example. 
+
+cron
+7,*,*,*,*
+
+duration
+earliest: -62m@m, latest: -2m@m
+
+### Schedule reasoning
+this puts the schedule on a regular but limited window to help with performance while capturing every event. 60 minutes is key to how the math is calculated in the baselining search.
+
+## Throttling, give yourself time to investigate the risk object in question before getting another notification.
+risk_object, 4 hours
+
