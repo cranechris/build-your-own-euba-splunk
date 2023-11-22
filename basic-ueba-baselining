@@ -1,0 +1,30 @@
+# preamble, there are many ways in Splunk to skin the statisics cat. there are many ways you can take data from splunk and manipulate this data with other tools(scikit-learn). this will get you a quick start with the basic SPL.
+
+# define the data to score
+
+index=risk risk_object_type IN ("system","user") AND savedsearch_description IN ("network traffic behavior","suspicious authentication behavior","intrusion sensor behavior","malware behavior","email risk behavior","user web behavior")
+
+# aggregate the data for caclulation and context carryover. avg( == average the field defined. std( == calculate the standard deviation of the field defined. eventstats is used to get a baseline of normal across all devices for any new devices that show up without a defined avg and std. It does not affect the following stats line, it only serves to provide more data to the ongoing search.
+
+| eventstats avg(count) as overall_threshold stdev(count) as overall_std
+| stats avg(risk_score) as risk_avg 
+std(risk_score) as risk_std 
+values(savedsearch_description) as savedsearch_descriptions
+by risk_object,risk_object_type,overall_threshold, overall_std
+
+# put the data somewhere it can be used quickly. Simply running the command will create the csv file on the server in the context of your app and user. I think a csv is a good use here unless you have millions of risk objects to consider. If so, you want to consider setting up a kv store.
+
+| outputlookup ueba-risk-stats.csv
+
+
+## Schedule
+Scheduled(never real time). I like to build fresh stats every day and 04:05 seems like a low lift time of day for a SIEM. The time window is a month in minutes, with a 60 minute skew for search performance reasons(avoid using (now) at all costs for big searches.
+
+cron
+5,4,*,*,*
+
+duration
+earliest: -43890m@m, latest: -60m@m
+
+throttling
+none
