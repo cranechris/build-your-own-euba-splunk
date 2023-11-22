@@ -4,13 +4,13 @@
 
 index=risk risk_object_type IN ("system","user") AND savedsearch_description IN ("network traffic behavior","suspicious authentication behavior","intrusion sensor behavior","malware behavior","email risk behavior","user web behavior")
 
-# aggregate the data for caclulation and context carryover. avg( == average the field defined. std( == calculate the standard deviation of the field defined. eventstats is used to get a baseline of normal across all devices for any new devices that show up without a defined avg and std. It does not affect the following stats line, it only serves to provide more data to the ongoing search.
+# aggregate the data for caclulation and context carryover *in an hourly window*(_time span=60m). avg( == average the field defined. std( == calculate the standard deviation of the field defined. eventstats is used to get a baseline of normal across all devices for any new devices that show up without a defined avg and std. It does not affect the following stats line, it only serves to provide more data to the ongoing search.
 
 | eventstats avg(count) as overall_threshold stdev(count) as overall_std
 | stats avg(risk_score) as risk_avg 
 std(risk_score) as risk_std 
 values(savedsearch_description) as savedsearch_descriptions
-by risk_object,risk_object_type,overall_threshold, overall_std
+by risk_object,risk_object_type,overall_threshold, overall_std, _time span=60m
 | eval risk_std=if(risk_std=0.0,overall_std,risk_std)
 | eval risk_std=round(risk_std, 1)
 | eval risk_avg=round(risk_avg, 1)
