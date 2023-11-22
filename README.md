@@ -13,3 +13,5 @@ Save all the searches as defined in each config file and then build your process
 # Do half the Math outside of Splunk
 You can run searches against Splunk's Rest API from a remote server that can utilize data science tools locally once you have index=risk populated with usable data. 
 https://docs.splunk.com/Documentation/SplunkCloud/latest/RESTTUT/RESTsearches
+# Pile on some AI
+https://splunkbase.splunk.com/app/6779
