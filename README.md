@@ -12,3 +12,4 @@ Run each of the saved risk building searches over the past 30 days ad hoc to pop
 Save all the searches as defined in each config file and then build your processes and procdures for response with testing and results. I'm not an app builder, but I wanted to give back to the community that gave so much to me.
 # Do half the Math outside of Splunk
 You can run searches against Splunk's Rest API from a remote server that can utilize data science tools locally once you have index=risk populated with usable data. 
+https://docs.splunk.com/Documentation/SplunkCloud/latest/RESTTUT/RESTsearches
