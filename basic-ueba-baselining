@@ -11,6 +11,11 @@ index=risk risk_object_type IN ("system","user") AND savedsearch_description IN 
 std(risk_score) as risk_std 
 values(savedsearch_description) as savedsearch_descriptions
 by risk_object,risk_object_type,overall_threshold, overall_std
+| eval risk_std=if(risk_std=0.0,overall_std,risk_std)
+| eval risk_std=round(risk_std, 1)
+| eval risk_avg=round(risk_avg, 1)
+| eval overall_threshold=round(overall_threshold,1)
+| eval overall_std=round(overall_std,1)
 
 # put the data somewhere it can be used quickly. Simply running the command will create the csv file on the server in the context of your app and user. I think a csv is a good use here unless you have millions of risk objects to consider. If so, you want to consider setting up a kv store.
 
